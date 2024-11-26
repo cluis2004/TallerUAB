@@ -1,28 +1,37 @@
 from profiles import create_profile
 from posts import create_post
+from posts import delete_post
 from groups import create_group
 from login import login_user
+from login import update_profile
+from db_connection import get_connection
+
+current_user_id = None  # Este valor será actualizado cuando inicie sesión
 
 def menu():
     """Muestra el menú principal del programa."""
     print("\n=== Menú Principal ===")
     print("1. Iniciar sesión")
-    print("2. Crear un nuevo perfil")
-    print("3. Crear una nueva publicación")
-    print("4. Crear un nuevo grupo")
+    print("2. Registrarse")
     print("0. Salir")
     return input("Selecciona una opción: ")
 
 
 def handle_login():
+    """Handles the login process, and stores the user_id of the authenticated user in the global variable current_user_id."""
+    global current_user_id  # Usamos la variable global
     print("\n=== Iniciar Sesión ===")
     correo_electronico = input("Correo electrónico: ")
     contrasena = input("Contraseña: ")
-
-    if login_user(correo_electronico, contrasena):
-        print("¡Inicio de sesión exitoso!")
+    
+    # Suponemos que login_user ahora devuelve el user_id cuando es exitoso
+    current_user_id = login_user(correo_electronico, contrasena)
+    if current_user_id:
+        # Si el inicio de sesión es exitoso, mostramos las opciones
+        print(f"¡Inicio de sesión exitoso para el usuario con ID: {current_user_id}!")
+    
+        show_menu()
     else:
-<<<<<<< HEAD
         # Si el inicio de sesión falla, mostramos un mensaje de error
         print("Inicio de sesión fallido. Por favor, verifica tus credenciales.")
 
@@ -82,9 +91,6 @@ def handle_view_posts():
     finally:
         cursor.close()
         connection.close()
-=======
-        print("Error en las credenciales. Intenta nuevamente.")
->>>>>>> 45d70d09e6a2ea84ef577732ae4f3ed5fcf0c153
 
 def handle_create_profile():
     print("\n=== Crear un Nuevo Perfil ===")
@@ -98,12 +104,12 @@ def handle_create_profile():
     create_profile(nombre, apellido, fecha_nacimiento, genero, correo_electronico, contrasena)
 
 
-def handle_create_post():
+def handle_create_post(current_user_id):
+
     print("\n=== Crear una Nueva Publicación ===")
     contenido = input("Contenido de la publicación: ")
     
     
-<<<<<<< HEAD
     # Usamos el user_id de la sesión
     if current_user_id:
         create_post(current_user_id, contenido)                             
@@ -111,12 +117,6 @@ def handle_create_post():
     else:
         print("Debes iniciar sesión primero para crear una publicación.")
         
-=======
-    user_id = 1  # Asegúrate de obtener este id correctamente si es necesario
-    create_post(user_id, contenido)
-    print("Publicación creada exitosamente.")
-
->>>>>>> 45d70d09e6a2ea84ef577732ae4f3ed5fcf0c153
 def handle_create_group():
     print("\n=== Crear un Nuevo Grupo ===")
     nombre = input("Nombre del grupo: ")
@@ -129,15 +129,10 @@ def handle_create_group():
 if __name__ == "__main__":
     while True:
         opcion = menu()
-        
         if opcion == "1":
             handle_login()
         elif opcion == "2":
             handle_create_profile()
-        elif opcion == "3":
-            handle_create_post()
-        elif opcion == "4":
-            handle_create_group()
         elif opcion == "0":
             print("Saliendo del programa. ¡Adiós!")
             break

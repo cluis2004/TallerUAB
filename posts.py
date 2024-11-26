@@ -7,7 +7,7 @@ def create_post(user_id, contenido):
     Inserta una nueva publicación en la base de datos usando el ID del usuario.
     Esta versión no depende de Flask y el user_id debe pasarse explícitamente.
     """
-    from test_inserts import show_menu
+    
     global current_user_id  # Necesitamos modificar la variable global current_user_id
 
     if not user_id:
@@ -33,14 +33,14 @@ def create_post(user_id, contenido):
     finally:
         cursor.close()
         connection.close()
-    show_menu()
+
 
 def delete_post(user_id, post_id):
     """
     Elimina una publicación del usuario autenticado.
     Solo se puede eliminar la publicación si el usuario autenticado es el propietario de la misma.
     """
-    from test_inserts import show_menu
+    
 
     
     if not user_id:
@@ -74,6 +74,6 @@ def delete_post(user_id, post_id):
     finally:
         cursor.close()
         connection.close()
-    show_menu()
+ 
 
 

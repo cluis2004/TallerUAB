@@ -9,11 +9,13 @@ from db_connection import get_connection
 current_user_id = None  # Este valor será actualizado cuando inicie sesión
 
 def menu():
+    """Muestra el menú principal del programa."""
     print("\n=== Menú Principal ===")
     print("1. Iniciar sesión")
     print("2. Registrarse")
     print("0. Salir")
     return input("Selecciona una opción: ")
+
 
 def handle_login():
     """Handles the login process, and stores the user_id of the authenticated user in the global variable current_user_id."""
@@ -36,26 +38,33 @@ def handle_login():
 
         
 def show_menu():
-    print("\n=== Menú opciones ===")
-    option = input("1. Crear una nueva publicación\n2. Crear un nuevo grupo\n3. Ver publicaciones\n4. Actualizar perfil\n5. Borrar publicación\n6. Cerrar sesión\nElige una opción: ")
     
-    options = {
-        "1": lambda:handle_create_post(current_user_id),
-        "2": handle_create_group,
-        "3": handle_view_posts,
-        "4": update_profile,
-        "5": lambda:delete_post(current_user_id,int(input("Id de la publicación a eliminar: "))),
-        "6": handle_logout,  # Implementamos el cierre de sesión
-    }
-    # Llamamos a la función correspondiente a la opción seleccionada
-    options.get(option, lambda: print("Opción no válida. Intenta nuevamente."))()
+    while True:
+        print("\n=== Menú opciones ===")
+        option = input("1. Crear una nueva publicación\n2. Crear un nuevo grupo\n3. Ver publicaciones\n4. Actualizar perfil\n5. Borrar publicación\n6. Cerrar sesión\nElige una opción: ")
+        options = {
+            "1": lambda:handle_create_post(current_user_id),
+            "2": handle_create_group,
+            "3": handle_view_posts,
+            "4": update_profile,
+            "5": lambda:delete_post(current_user_id,int(input("Id de la publicación a eliminar: "))),
+            "6": handle_logout,  # Implementamos el cierre de sesión
+        }
+        # Llamamos a la función correspondiente a la opción seleccionada
+        if option in options:
+            options[option]()
+            if option == "6":
+                break
+        else:
+            print("Opción no válida. Intenta nuevamente.\n")
 
+            
 def handle_logout():
     global current_user_id
     print("Cerrando sesión...")
     current_user_id = None  # Restablecemos el usuario actual
     print("Has cerrado sesión exitosamente.")
-    show_menu()  # Volver al menú principal
+
 
 def handle_view_posts():
     """
@@ -76,7 +85,6 @@ def handle_view_posts():
             
         else:
             print("No hay publicaciones disponibles.")
-        show_menu()
 
     except Exception as e:
         print(f"Error al obtener las publicaciones: {e}")
@@ -94,7 +102,7 @@ def handle_create_profile():
     contrasena = input("Contraseña: ")
     
     create_profile(nombre, apellido, fecha_nacimiento, genero, correo_electronico, contrasena)
-    print("Perfil creado exitosamente.")
+
 
 def handle_create_post(current_user_id):
 
@@ -104,8 +112,8 @@ def handle_create_post(current_user_id):
     
     # Usamos el user_id de la sesión
     if current_user_id:
-        create_post(current_user_id, contenido)
-        show_menu()
+        create_post(current_user_id, contenido)                             
+        
     else:
         print("Debes iniciar sesión primero para crear una publicación.")
         
@@ -130,5 +138,3 @@ if __name__ == "__main__":
             break
         else:
             print("Opción no válida. Intenta nuevamente.")
-            
-            

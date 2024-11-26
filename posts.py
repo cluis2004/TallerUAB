@@ -1,15 +1,16 @@
 from db_connection import get_connection  # Asegúrate de que esta función esté correctamente importada
 
-current_user_id = None  # Variable global para almacenar el ID del usuario autenticado
-
 def create_post(user_id, contenido):
     """
     Inserta una nueva publicación en la base de datos usando el ID del usuario.
     Esta versión no depende de Flask y el user_id debe pasarse explícitamente.
     """
+<<<<<<< HEAD
     
     global current_user_id  # Necesitamos modificar la variable global current_user_id
 
+=======
+>>>>>>> 45d70d09e6a2ea84ef577732ae4f3ed5fcf0c153
     if not user_id:
         print("Error: Usuario no autenticado.")
         return
@@ -18,21 +19,18 @@ def create_post(user_id, contenido):
         connection = get_connection()
         cursor = connection.cursor()
         query = """
-        INSERT INTO publicaciones (id_perfil, contenido)
+        INSERT INTO posts (id_perfil, contenido)
         VALUES (%s, %s);
         """
         cursor.execute(query, (user_id, contenido))
         connection.commit()
         print("¡Publicación creada exitosamente!")
-        
-        # Actualizamos el current_user_id después de crear la publicación
-        current_user_id = user_id
-
     except Exception as e:
         print(f"Error al crear la publicación: {e}")
     finally:
         cursor.close()
         connection.close()
+<<<<<<< HEAD
 
 
 def delete_post(user_id, post_id):
@@ -77,3 +75,5 @@ def delete_post(user_id, post_id):
  
 
 
+=======
+>>>>>>> 45d70d09e6a2ea84ef577732ae4f3ed5fcf0c153

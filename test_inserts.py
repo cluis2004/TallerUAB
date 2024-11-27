@@ -1,138 +1,150 @@
-from profiles import create_profile
-from posts import create_post
-from posts import delete_post
-from groups import create_group
-from login import login_user
-from login import update_profile
+# importamos las funciones de los archivos
+from profiles import nuevo_perfil
+from posts import nueva_publicacion
+from posts import eliminar_publicacion
+from posts import ver_publicaciones
+from posts import actualizar_publicacion
+from groups import nuevo_grupo
+from login import iniciar_sesion_usuario
+from login import actualizar_perfil
 from db_connection import get_connection
+from comments import nuevo_comentario
+from comments import mostrar_comentarios
+from comments import eliminar_comentario
+
 
 current_user_id = None  # Este valor será actualizado cuando inicie sesión
 
-def menu():
-    """Muestra el menú principal del programa."""
+# Función para mostrar el menú principal para el usuario
+def mostrar_menu_principal():
+    """Registrese o inicie sesión."""
     print("\n=== Menú Principal ===")
     print("1. Iniciar sesión")
-    print("2. Registrarse")
+    print("2. crear usuario")
     print("0. Salir")
     return input("Selecciona una opción: ")
 
 
-def handle_login():
-    """Handles the login process, and stores the user_id of the authenticated user in the global variable current_user_id."""
+#funcion para crear comentario
+def crear_comentario():
+    print("\n=== Crear un Nuevo Comentario ===")
+    # Pide el contenido del comentario
+    contenido = input("Contenido del comentario: ")
+    # Asegúrate de tener el ID de la publicación y del usuario actual
+    try:
+        id_publicacion = int(input("ID de la publicación a comentar: "))  # Solicitar ID de la publicación
+    except ValueError:
+        print("Por favor ingresa un ID válido para la publicación.")
+        return
+
+    # Suponiendo que 'current_user_id' ya tiene el valor del ID del usuario logueado
+    # Llamada a la función para enviar el comentario
+    if nuevo_comentario(id_publicacion, contenido, current_user_id):
+        print("Comentario enviado exitosamente.")
+    else:
+        print("Hubo un error al enviar el comentario.")
+
+def ver_comentarios(id_perfil):
+    id_publicacion = input("Introduce el ID de la publicación que quieres ver: ")
+    mostrar_comentarios(id_publicacion, id_perfil)
+
+
+def manejar_inicio_de_sesion():
+    """Maneja el proceso de inicio de sesión y almacena los user_id del usuario autenticado en la variable global current_user_id."""
     global current_user_id  # Usamos la variable global
     print("\n=== Iniciar Sesión ===")
     correo_electronico = input("Correo electrónico: ")
     contrasena = input("Contraseña: ")
     
     # Suponemos que login_user ahora devuelve el user_id cuando es exitoso
-    current_user_id = login_user(correo_electronico, contrasena)
+    current_user_id = iniciar_sesion_usuario(correo_electronico, contrasena)
     if current_user_id:
         # Si el inicio de sesión es exitoso, mostramos las opciones
         print(f"¡Inicio de sesión exitoso para el usuario con ID: {current_user_id}!")
-    
-        show_menu()
+        mostrar_menu_opciones()
     else:
         # Si el inicio de sesión falla, mostramos un mensaje de error
         print("Inicio de sesión fallido. Por favor, verifica tus credenciales.")
 
 
         
-def show_menu():
-    
+def mostrar_menu_opciones():
     while True:
         print("\n=== Menú opciones ===")
-        option = input("1. Crear una nueva publicación\n2. Crear un nuevo grupo\n3. Ver publicaciones\n4. Actualizar perfil\n5. Borrar publicación\n6. Cerrar sesión\nElige una opción: ")
+        option = input("1. Crear una nueva publicación\n2. Crear un nuevo grupo\n3. Crear un nuevo comentario\n4. Ver publicaciones\n5. Actualizar perfil\n6. Borrar publicación\n7. Cerrar sesión\n8. Mostrar comentarios\n9. Actualizar Publicacion\n10. Eliminar comentario\nElige una opción: ")
         options = {
-            "1": lambda:handle_create_post(current_user_id),
-            "2": handle_create_group,
-            "3": handle_view_posts,
-            "4": update_profile,
-            "5": lambda:delete_post(current_user_id,int(input("Id de la publicación a eliminar: "))),
-            "6": handle_logout,  # Implementamos el cierre de sesión
+            "1": lambda: crear_publicacion(current_user_id),
+            "2": nuevo_grupos,
+            "3": crear_comentario,
+            "4": ver_publicaciones,
+            "5": actualizar_perfil,
+            "6": lambda: eliminar_publicacion(current_user_id, int(input("Id de la publicación a eliminar: "))),
+            "7": manejar_cierre_de_sesion,
+            "8": lambda: ver_comentarios(current_user_id),
+            "9": lambda: actualizar_publicacion(current_user_id, int(input("ID de la publicacion a actualizar: ")), input("Nuevo contenido: ")),
+            "10": lambda: eliminar_comentario(int(input("ID del comentario a eliminar: ")),current_user_id)
         }
         # Llamamos a la función correspondiente a la opción seleccionada
         if option in options:
             options[option]()
-            if option == "6":
+            if option == "7":  # Salir del menú si selecciona cerrar sesión
                 break
         else:
             print("Opción no válida. Intenta nuevamente.\n")
 
-            
-def handle_logout():
+
+def manejar_cierre_de_sesion():
     global current_user_id
     print("Cerrando sesión...")
     current_user_id = None  # Restablecemos el usuario actual
     print("Has cerrado sesión exitosamente.")
 
 
-def handle_view_posts():
-    """
-    Muestra las publicaciones almacenadas en la base de datos.
-    """
-    print("\n=== Publicaciones ===")
-    try:
-        connection = get_connection()
-        cursor = connection.cursor()
-        query = "SELECT id, id_perfil, contenido FROM publicaciones;"
-        cursor.execute(query)
-        rows = cursor.fetchall()  # Obtiene todas las filas del resultado
 
-        if rows:
-            print(f"Se encontraron {len(rows)} publicaciones:")
-            for row in rows:
-                print(f"ID: {row[0]}, Usuario: {row[1]}, Contenido: {row[2]}")
-            
-        else:
-            print("No hay publicaciones disponibles.")
-
-    except Exception as e:
-        print(f"Error al obtener las publicaciones: {e}")
-    finally:
-        cursor.close()
-        connection.close()
-
-def handle_create_profile():
+def crear_perfil():
     print("\n=== Crear un Nuevo Perfil ===")
     nombre = input("Nombre: ")
     apellido = input("Apellido: ")
     fecha_nacimiento = input("Fecha de nacimiento (YYYY-MM-DD): ")
-    genero = input("Género: ")
+    opcion = input("seleccione un genero (1. masculino, 2. femenino, 3. Otro): ").strip()
+    if opcion == "1":
+        genero = "masculino"
+    elif opcion == "2":
+        genero = "femenino"
+    else:
+        genero = "otro"
     correo_electronico = input("Correo electrónico: ")
     contrasena = input("Contraseña: ")
     
-    create_profile(nombre, apellido, fecha_nacimiento, genero, correo_electronico, contrasena)
+    nuevo_perfil(nombre, apellido, fecha_nacimiento, genero, correo_electronico, contrasena)
 
 
-def handle_create_post(current_user_id):
-
+def crear_publicacion(current_user_id):
     print("\n=== Crear una Nueva Publicación ===")
     contenido = input("Contenido de la publicación: ")
-    
-    
-    # Usamos el user_id de la sesión
+    # Usamos el user_id de la sesión actual
     if current_user_id:
-        create_post(current_user_id, contenido)                             
+        nueva_publicacion(current_user_id, contenido)                             
         
     else:
         print("Debes iniciar sesión primero para crear una publicación.")
         
-def handle_create_group():
+def nuevo_grupos():
     print("\n=== Crear un Nuevo Grupo ===")
     nombre = input("Nombre del grupo: ")
     descripcion = input("Descripción del grupo: ")
     privacidad = input("Privacidad del grupo (publica/privada/secreta): ")
     
-    create_group(nombre, descripcion, privacidad)
+    nuevo_grupo(nombre, descripcion, privacidad)
     print("Grupo creado exitosamente.")
 
 if __name__ == "__main__":
     while True:
-        opcion = menu()
+        opcion = mostrar_menu_principal()
         if opcion == "1":
-            handle_login()
+            manejar_inicio_de_sesion()
         elif opcion == "2":
-            handle_create_profile()
+            crear_perfil()
         elif opcion == "0":
             print("Saliendo del programa. ¡Adiós!")
             break

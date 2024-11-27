@@ -4,46 +4,45 @@ from db_connection import get_connection
 # Variable global para almacenar el ID del usuario autenticado
 current_user_id = None
 
-def login_user(correo_electronico, contrasena):
+def iniciar_sesion_usuario(correo_electronico, contrasena):
     """
     Autentica al usuario verificando su correo y contraseña.
     Si es exitoso, guarda el ID del usuario.
     """
     global current_user_id
-    connection = None
-    cursor = None
     try:
         connection = get_connection()
+        if connection is None:
+            print("Error al conectar a la base de datos.")
+            return None
+
         cursor = connection.cursor()
-        
-        # Obtener la contraseña encriptada desde la base de datos
-        query = "SELECT id, contrasena FROM perfiles WHERE correo_electronico = %s"
+        query = "SELECT id_perfil, contrasena, nombre, apellido FROM perfiles WHERE correo_electronico = %s"
         cursor.execute(query, (correo_electronico,))
         user = cursor.fetchone()
 
         if user:
-            user_id, hashed_password = user
-            # Verificar la contraseña ingresada contra el hash almacenado
+            user_id, hashed_password, nombre, apellido = user
             if bcrypt.checkpw(contrasena.encode('utf-8'), hashed_password.encode('utf-8')):
                 current_user_id = user_id
+                print(f"Bienvenido, {nombre} {apellido}!")
                 return user_id
             else:
-                print("Credenciales inválidas")
+                print("Credenciales inválidas.")
                 return None
         else:
-            print("Usuario no encontrado")
+            print("Usuario no encontrado.")
             return None
     except Exception as e:
         print(f"Error al iniciar sesión: {e}")
         return None
     finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
+        cursor.close()
+        connection.close()
 
 
-def update_profile():
+
+def actualizar_perfil():
     """
     Actualiza el perfil del usuario autenticado.
     """
@@ -58,7 +57,7 @@ def update_profile():
         cursor = connection.cursor()
 
         # Obtener información actual del perfil
-        query_check = "SELECT nombre, correo_electronico FROM perfiles WHERE id = %s;"
+        query_check = "SELECT nombre, correo_electronico FROM perfiles WHERE id_perfil = %s;"
         cursor.execute(query_check, (current_user_id,))
         perfil = cursor.fetchone()
 
@@ -88,7 +87,7 @@ def update_profile():
 
         # Solo ejecutar si hay campos que actualizar
         if updates:
-            query_update = f"UPDATE perfiles SET {', '.join(updates)} WHERE id = %s;"
+            query_update = f"UPDATE perfiles SET {', '.join(updates)} WHERE id_perfil = %s;"
             values.append(current_user_id)
             cursor.execute(query_update, tuple(values))
             connection.commit()

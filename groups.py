@@ -1,7 +1,7 @@
 import mysql.connector
 from db_connection import get_connection
 
-def create_group(nombre, descripcion, privacidad):
+def nuevo_grupo(nombre, descripcion, privacidad):
     try:
         connection = get_connection()
         cursor = connection.cursor()
